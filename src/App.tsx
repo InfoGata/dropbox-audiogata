@@ -1,0 +1,100 @@
+import { FunctionalComponent } from "preact";
+import { useState, useEffect } from "preact/hooks";
+import { CLIENT_ID } from "./shared";
+import { AccessCodeResponse } from "./types";
+
+const redirectUri = "http://localhost:3000/audiogata/login_popup.html";
+
+const App: FunctionalComponent = () => {
+  const [accessToken, setAccessToken] = useState("");
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      switch (event.data.type) {
+        case "message":
+          setMessage(message);
+          break;
+        case "login":
+          setAccessToken(event.data.accessToken);
+          break;
+      }
+    };
+    window.addEventListener("message", onMessage);
+    parent.postMessage({ type: "check-login" }, "*");
+    return () => window.removeEventListener("message", onMessage);
+  });
+
+  const onLogin = async () => {
+    const dropboxAuth = new Dropbox.DropboxAuth({ clientId: CLIENT_ID });
+    const authUrl = await dropboxAuth.getAuthenticationUrl(
+      redirectUri,
+      undefined,
+      "code",
+      "offline",
+      undefined,
+      undefined,
+      true
+    );
+    const url = authUrl.valueOf();
+    const newWindow = window.open();
+    window.onmessage = async (event: MessageEvent) => {
+      if (event.source === newWindow && event.data.url) {
+        const returnUrl = new URL(event.data.url);
+        newWindow.close();
+        const code = returnUrl.searchParams.get("code") || "";
+        const accessCodeResponse = await dropboxAuth.getAccessTokenFromCode(
+          redirectUri,
+          code
+        );
+        const accessCodeResult =
+          accessCodeResponse.result as AccessCodeResponse;
+        const accessToken = accessCodeResult.access_token;
+        const refreshToken = accessCodeResult.refresh_token;
+        setAccessToken(accessToken);
+        dropboxAuth.setAccessToken(accessToken);
+        parent.postMessage(
+          {
+            type: "login",
+            accessToken,
+            refreshToken,
+          },
+          "*"
+        );
+      }
+    };
+    newWindow.location.href = url;
+  };
+
+  const onSave = () => {
+    parent.postMessage({ type: "save" }, "*");
+  };
+
+  const onLoad = () => {
+    parent.postMessage({ type: "load" }, "*");
+  };
+
+  const onLogout = () => {
+    parent.postMessage({ type: "logout" }, "*");
+    setAccessToken("");
+  };
+
+  return (
+    <>
+      {accessToken ? (
+        <div>
+          {message}
+          <div>
+            <button onClick={onSave}>Save</button>
+            <button onClick={onLoad}>Load</button>
+            <button onClick={onLogout}>Logout</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={onLogin}>Login</button>
+      )}
+    </>
+  );
+};
+
+export default App;

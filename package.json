@@ -1,0 +1,19 @@
+{
+  "name": "dropbox-audiogata",
+  "version": "1.0.0",
+  "description": "Dropbox plugin for audiogata",
+  "scripts": {
+    "build": "parcel build src/index.ts src/options.html --dist-dir dist/ --no-source-maps",
+    "start": "parcel src/index.ts src/options.html --dist-dir dist/ --no-source-maps"
+  },
+  "author": "Elijah Green",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel": "^2.3.2",
+    "typescript": "^4.6.2"
+  },
+  "dependencies": {
+    "dropbox": "^10.26.0",
+    "preact": "^10.7.1"
+  }
+}
