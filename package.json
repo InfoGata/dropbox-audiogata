@@ -7,7 +7,7 @@
     "start": "parcel src/index.ts src/options.html --dist-dir dist/ --no-source-maps"
   },
   "author": "Elijah Green",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "parcel": "^2.3.2",
     "typescript": "^4.6.2"

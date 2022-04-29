@@ -1,7 +1,7 @@
 {
-  "name": "Dropbox sync",
-  "api": "1.0.0",
+  "name": "Plugin for Dropbox",
+  "version": "1.0.0",
   "script": "dist/index.js",
   "options": "dist/options.html",
-  "description": "Dropbox Audiogata plugin"
+  "description": "Store and retreive playlists from Dropbox"
 }
