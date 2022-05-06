@@ -3,17 +3,20 @@ import { useState, useEffect } from "preact/hooks";
 import { CLIENT_ID } from "./shared";
 import { AccessCodeResponse } from "./types";
 
-const redirectUri = "http://localhost:3000/audiogata/login_popup.html";
-
+const redirectPath = "/login_popup.html";
 const App: FunctionalComponent = () => {
   const [accessToken, setAccessToken] = useState("");
   const [message, setMessage] = useState("");
+  const [redirectUri, setRedirectUri] = useState("");
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       switch (event.data.type) {
         case "message":
           setMessage(message);
+          break;
+        case "origin":
+          setRedirectUri(event.data.value + redirectPath);
           break;
         case "login":
           setAccessToken(event.data.accessToken);
@@ -70,8 +73,16 @@ const App: FunctionalComponent = () => {
     parent.postMessage({ type: "save" }, "*");
   };
 
+  const onSavePlugins = () => {
+    parent.postMessage({ type: "save-plugins" }, "*");
+  };
+
   const onLoad = () => {
     parent.postMessage({ type: "load" }, "*");
+  };
+
+  const onLoadPlugins = () => {
+    parent.postMessage({ type: "load-plugins" }, "*");
   };
 
   const onLogout = () => {
@@ -85,9 +96,17 @@ const App: FunctionalComponent = () => {
         <div>
           {message}
           <div>
-            <button onClick={onSave}>Save</button>
-            <button onClick={onLoad}>Load</button>
-            <button onClick={onLogout}>Logout</button>
+            <div>
+              <button onClick={onSave}>Save Now Playing</button>
+              <button onClick={onLoad}>Load Now Playing</button>
+            </div>
+            <div>
+              <button onClick={onSavePlugins}>Save Plugins</button>
+              <button onClick={onLoadPlugins}>Install Plugins</button>
+            </div>
+            <div>
+              <button onClick={onLogout}>Logout</button>
+            </div>
           </div>
         </div>
       ) : (

@@ -47,6 +47,21 @@ export interface IImage {
   width: number;
 }
 
+export interface PluginInfo {
+  id?: string;
+  name: string;
+  script: string;
+  version?: string;
+  description?: string;
+  optionsHtml?: string;
+  optionsSameOrigin?: boolean;
+}
+
+export interface NotificationMessage {
+  message: string;
+  type?: "default" | "success" | "error" | "warning" | "info";
+}
+
 export interface Application {
   searchAll?: (query: string) => Promise<{
     tracks?: ISong[];
@@ -74,6 +89,10 @@ export interface Application {
   onNowPlayingTracksRemoved: (track: ISong[]) => Promise<void>;
   onNowPlayingTracksChanged: (track: ISong[]) => Promise<void>;
   onNowPlayingTracksSet: (track: ISong[]) => Promise<void>;
+  createNotification: (notification: NotificationMessage) => Promise<void>;
+  getCorsProxy: () => Promise<string>;
+  installPlugins: (plugins: PluginInfo[]) => void;
+  getPlugins: () => Promise<PluginInfo[]>;
 }
 
 export interface AccessCodeResponse {
