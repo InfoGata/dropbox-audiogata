@@ -26,9 +26,10 @@ const App: FunctionalComponent = () => {
     window.addEventListener("message", onMessage);
     parent.postMessage({ type: "check-login" }, "*");
     return () => window.removeEventListener("message", onMessage);
-  });
+  }, []);
 
   const onLogin = async () => {
+    const newWindow = window.open();
     const dropboxAuth = new Dropbox.DropboxAuth({ clientId: CLIENT_ID });
     const authUrl = await dropboxAuth.getAuthenticationUrl(
       redirectUri,
@@ -40,7 +41,6 @@ const App: FunctionalComponent = () => {
       true
     );
     const url = authUrl.valueOf();
-    const newWindow = window.open();
     window.onmessage = async (event: MessageEvent) => {
       if (event.source === newWindow && event.data.url) {
         const returnUrl = new URL(event.data.url);
@@ -55,7 +55,6 @@ const App: FunctionalComponent = () => {
         const accessToken = accessCodeResult.access_token;
         const refreshToken = accessCodeResult.refresh_token;
         setAccessToken(accessToken);
-        dropboxAuth.setAccessToken(accessToken);
         parent.postMessage(
           {
             type: "login",
