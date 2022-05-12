@@ -40,7 +40,7 @@ const App: FunctionalComponent = () => {
       true
     );
     const url = authUrl.valueOf();
-    const newWindow = window.open(url);
+    const newWindow = window.open(url, "_blank");
     window.onmessage = async (event: MessageEvent) => {
       if (event.source === newWindow && event.data.url) {
         const returnUrl = new URL(event.data.url);
