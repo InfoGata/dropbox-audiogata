@@ -29,7 +29,6 @@ const App: FunctionalComponent = () => {
   }, []);
 
   const onLogin = async () => {
-    const newWindow = window.open("");
     const dropboxAuth = new Dropbox.DropboxAuth({ clientId: CLIENT_ID });
     const authUrl = await dropboxAuth.getAuthenticationUrl(
       redirectUri,
@@ -41,6 +40,7 @@ const App: FunctionalComponent = () => {
       true
     );
     const url = authUrl.valueOf();
+    const newWindow = window.open(url);
     window.onmessage = async (event: MessageEvent) => {
       if (event.source === newWindow && event.data.url) {
         const returnUrl = new URL(event.data.url);
@@ -65,7 +65,6 @@ const App: FunctionalComponent = () => {
         );
       }
     };
-    newWindow.location = url;
   };
 
   const onSave = () => {
