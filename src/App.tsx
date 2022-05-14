@@ -8,6 +8,7 @@ const App: FunctionalComponent = () => {
   const [accessToken, setAccessToken] = useState("");
   const [message, setMessage] = useState("");
   const [redirectUri, setRedirectUri] = useState("");
+  const [pluginId, setPluginId] = useState("");
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -17,6 +18,10 @@ const App: FunctionalComponent = () => {
           break;
         case "origin":
           setRedirectUri(event.data.value + redirectPath);
+          // pluginId is subdomain
+          const originUrl = new URL(event.data.value);
+          const id = originUrl.hostname.split(".")[0];
+          setPluginId(id);
           break;
         case "login":
           setAccessToken(event.data.accessToken);
@@ -30,9 +35,11 @@ const App: FunctionalComponent = () => {
 
   const onLogin = async () => {
     const dropboxAuth = new Dropbox.DropboxAuth({ clientId: CLIENT_ID });
+    const state = { pluginId: pluginId };
+    const stateStr = JSON.stringify(state);
     const authUrl = await dropboxAuth.getAuthenticationUrl(
       redirectUri,
-      undefined,
+      stateStr,
       "code",
       "offline",
       undefined,
