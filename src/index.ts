@@ -106,6 +106,10 @@ application.onUiMessage = async (message: any) => {
       break;
   }
 };
+application.onDeepLinkMessage = async (message: string) => {
+  console.log(message);
+  application.postUiMessage({ type: "deeplink", url: message });
+};
 
 const loadScript = () => {
   return new Promise<void>((resolve, reject) => {

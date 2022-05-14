@@ -41,28 +41,36 @@ const App: FunctionalComponent = () => {
     );
     const url = authUrl.valueOf();
     const newWindow = window.open(url, "_blank");
+    const onMessage = async (url: string) => {
+      const returnUrl = new URL(url);
+      newWindow.close();
+      const code = returnUrl.searchParams.get("code") || "";
+      const accessCodeResponse = await dropboxAuth.getAccessTokenFromCode(
+        redirectUri,
+        code
+      );
+      const accessCodeResult = accessCodeResponse.result as AccessCodeResponse;
+      const accessToken = accessCodeResult.access_token;
+      const refreshToken = accessCodeResult.refresh_token;
+      setAccessToken(accessToken);
+      parent.postMessage(
+        {
+          type: "login",
+          accessToken,
+          refreshToken,
+        },
+        "*"
+      );
+    };
     window.onmessage = async (event: MessageEvent) => {
       if (event.source === newWindow && event.data.url) {
         const returnUrl = new URL(event.data.url);
-        newWindow.close();
-        const code = returnUrl.searchParams.get("code") || "";
-        const accessCodeResponse = await dropboxAuth.getAccessTokenFromCode(
-          redirectUri,
-          code
-        );
-        const accessCodeResult =
-          accessCodeResponse.result as AccessCodeResponse;
-        const accessToken = accessCodeResult.access_token;
-        const refreshToken = accessCodeResult.refresh_token;
-        setAccessToken(accessToken);
-        parent.postMessage(
-          {
-            type: "login",
-            accessToken,
-            refreshToken,
-          },
-          "*"
-        );
+        await onMessage(event.data.url);
+      } else {
+        // mobile deeplink
+        if (event.data.type === "deeplink") {
+          await onMessage(event.data.url);
+        }
       }
     };
 

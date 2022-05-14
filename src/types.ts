@@ -72,6 +72,7 @@ export interface Application {
   getTrackUrl?: (song: ISong) => Promise<void>;
   getPlaylistTracks?: (playlist: IPlaylist) => Promise<void>;
   postUiMessage: (msg: any) => Promise<void>;
+  onDeepLinkMessage: (message: any) => Promise<void>;
   onUiMessage?: (message: any) => void;
   endTrack: () => Promise<void>;
   setTrackTime: (currentTime: number) => Promise<void>;
