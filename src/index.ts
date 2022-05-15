@@ -60,14 +60,13 @@ const loadPlugins = async () => {
   application.installPlugins(plugins);
 };
 
-const sendOrigin = () => {
+const sendOrigin = async () => {
   const host = document.location.host;
-  // pluginId is subdomain
-  const pluginId = host.split(".")[0];
   const hostArray = host.split(".");
   hostArray.shift();
   const domain = hostArray.join(".");
   const origin = `${document.location.protocol}//${domain}`;
+  const pluginId = await application.getPluginId();
   application.postUiMessage({
     type: "origin",
     origin: origin,
@@ -89,7 +88,7 @@ application.onUiMessage = async (message: any) => {
       if (token) {
         await application.postUiMessage({ type: "login", accessToken: token });
       }
-      sendOrigin();
+      await sendOrigin();
       break;
     case "save":
       await saveNowPlaying();

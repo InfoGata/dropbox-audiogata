@@ -94,6 +94,7 @@ export interface Application {
   getCorsProxy: () => Promise<string>;
   installPlugins: (plugins: PluginInfo[]) => void;
   getPlugins: () => Promise<PluginInfo[]>;
+  getPluginId: () => Promise<string>;
 }
 
 export interface AccessCodeResponse {
