@@ -62,13 +62,16 @@ const loadPlugins = async () => {
 
 const sendOrigin = () => {
   const host = document.location.host;
+  // pluginId is subdomain
+  const pluginId = host.split(".")[0];
   const hostArray = host.split(".");
   hostArray.shift();
   const domain = hostArray.join(".");
   const origin = `${document.location.protocol}//${domain}`;
   application.postUiMessage({
     type: "origin",
-    value: origin,
+    origin: origin,
+    pluginId: pluginId,
   });
 };
 

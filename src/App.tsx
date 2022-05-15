@@ -17,11 +17,8 @@ const App: FunctionalComponent = () => {
           setMessage(message);
           break;
         case "origin":
-          setRedirectUri(event.data.value + redirectPath);
-          // pluginId is subdomain
-          const originUrl = new URL(event.data.value);
-          const id = originUrl.hostname.split(".")[0];
-          setPluginId(id);
+          setRedirectUri(event.data.origin + redirectPath);
+          setPluginId(event.data.pluginId);
           break;
         case "login":
           setAccessToken(event.data.accessToken);
