@@ -77,11 +77,6 @@ const App: FunctionalComponent = () => {
         }
       }
     };
-
-    newWindow.addEventListener("loadstart", (event) => {
-      console.log("Load Start");
-      console.log(event);
-    });
   };
 
   const onSave = () => {
