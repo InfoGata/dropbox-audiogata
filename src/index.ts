@@ -43,16 +43,28 @@ const load = async (path: string): Promise<any[]> => {
 const saveNowPlaying = async () => {
   const tracks = await application.getNowPlayingTracks();
   await save(NOW_PLAYING_PATH, tracks);
+  application.postUiMessage({
+    type: "message",
+    message: "Successfully saved Now playing tracks.",
+  });
 };
 
 const loadNowPlaying = async () => {
   const tracks: ISong[] = await load(NOW_PLAYING_PATH);
   await application.setNowPlayingTracks(tracks);
+  application.postUiMessage({
+    type: "message",
+    message: "Successfully loaded Now playing tracks.",
+  });
 };
 
 const savePlugins = async () => {
   const plugins = await application.getPlugins();
   await save(PLUGIN_PATH, plugins);
+  application.postUiMessage({
+    type: "message",
+    message: "Successfully saved plugins.",
+  });
 };
 
 const loadPlugins = async () => {

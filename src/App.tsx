@@ -10,11 +10,18 @@ const App: FunctionalComponent = () => {
   const [redirectUri, setRedirectUri] = useState("");
   const [pluginId, setPluginId] = useState("");
 
+  const showMessage = (m: string) => {
+    setMessage(m);
+    setTimeout(() => {
+      setMessage("");
+    }, 3000);
+  };
+
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       switch (event.data.type) {
         case "message":
-          setMessage(message);
+          showMessage(event.data.message);
           break;
         case "origin":
           setRedirectUri(event.data.origin + redirectPath);
@@ -104,7 +111,6 @@ const App: FunctionalComponent = () => {
     <>
       {accessToken ? (
         <div>
-          {message}
           <div>
             <div>
               <button onClick={onSave}>Save Now Playing</button>
@@ -122,6 +128,7 @@ const App: FunctionalComponent = () => {
       ) : (
         <button onClick={onLogin}>Login</button>
       )}
+      <pre>{message}</pre>
     </>
   );
 };
