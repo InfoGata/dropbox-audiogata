@@ -95,6 +95,8 @@ export interface Application {
   installPlugins: (plugins: PluginInfo[]) => void;
   getPlugins: () => Promise<PluginInfo[]>;
   getPluginId: () => Promise<string>;
+  getPlaylists: () => Promise<IPlaylist[]>;
+  addPlaylists: (playlists: IPlaylist[]) => Promise<void>;
 }
 
 export interface AccessCodeResponse {

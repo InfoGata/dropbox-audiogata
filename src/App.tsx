@@ -54,7 +54,9 @@ const App: FunctionalComponent = () => {
     const newWindow = window.open(url, "_blank");
     const onMessage = async (url: string) => {
       const returnUrl = new URL(url);
-      newWindow.close();
+      if (newWindow) {
+        newWindow.close();
+      }
       const code = returnUrl.searchParams.get("code") || "";
       const accessCodeResponse = await dropboxAuth.getAccessTokenFromCode(
         redirectUri,

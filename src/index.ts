@@ -1,10 +1,11 @@
 import type { DropboxAuth } from "dropbox";
 import { CLIENT_ID } from "./shared";
-import { Application, ISong, PluginInfo } from "./types";
+import { Application, IPlaylist, ISong, PluginInfo } from "./types";
 
 const PATH_PREFIX = "/audiogata";
 const NOW_PLAYING_PATH = "/nowplaying.json";
 const PLUGIN_PATH = "/plugins.json";
+const PLAYLIST_PATH = "/playlists.json";
 
 declare var application: Application;
 let dropboxAuth: DropboxAuth;
@@ -67,6 +68,24 @@ const savePlugins = async () => {
   });
 };
 
+const addPlaylists = async () => {
+  const playlists: IPlaylist[] = await load(PLAYLIST_PATH);
+  await application.addPlaylists(playlists);
+  application.postUiMessage({
+    type: "message",
+    message: "Successfully added playlists.",
+  });
+};
+
+const savePlaylists = async () => {
+  const playlists = await application.getPlaylists();
+  await save(PLAYLIST_PATH, playlists);
+  application.postUiMessage({
+    type: "message",
+    message: "Successfully saved playlists.",
+  });
+};
+
 const loadPlugins = async () => {
   const plugins: PluginInfo[] = await load(PLUGIN_PATH);
   application.installPlugins(plugins);
@@ -113,6 +132,12 @@ application.onUiMessage = async (message: any) => {
       break;
     case "load-plugins":
       await loadPlugins();
+      break;
+    case "save-playlists":
+      await savePlaylists();
+      break;
+    case "load-playlists":
+      await addPlaylists();
       break;
     case "logout":
       localStorage.removeItem("access_token");
