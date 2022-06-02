@@ -1,13 +1,11 @@
 import type { DropboxAuth } from "dropbox";
 import { CLIENT_ID } from "./shared";
-import { Application, IPlaylist, ISong, PluginInfo } from "./types";
+import "audiogata-plugin-typings";
 
 const PATH_PREFIX = "/audiogata";
 const NOW_PLAYING_PATH = "/nowplaying.json";
 const PLUGIN_PATH = "/plugins.json";
 const PLAYLIST_PATH = "/playlists.json";
-
-declare var application: Application;
 let dropboxAuth: DropboxAuth;
 
 const setTokens = (accessToken: string, refreshToken: string) => {
