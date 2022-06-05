@@ -49,7 +49,7 @@ const saveNowPlaying = async () => {
 };
 
 const loadNowPlaying = async () => {
-  const tracks: ISong[] = await load(NOW_PLAYING_PATH);
+  const tracks: Track[] = await load(NOW_PLAYING_PATH);
   await application.setNowPlayingTracks(tracks);
   application.postUiMessage({
     type: "message",
@@ -67,7 +67,7 @@ const savePlugins = async () => {
 };
 
 const addPlaylists = async () => {
-  const playlists: IPlaylist[] = await load(PLAYLIST_PATH);
+  const playlists: Playlist[] = await load(PLAYLIST_PATH);
   await application.addPlaylists(playlists);
   application.postUiMessage({
     type: "message",
