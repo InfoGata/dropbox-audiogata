@@ -1,3 +1,4 @@
+import { Button } from "@mui/material";
 import { FunctionalComponent } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { CLIENT_ID } from "./shared";
@@ -115,20 +116,20 @@ const App: FunctionalComponent = () => {
         <div>
           <div>
             <div>
-              <button onClick={onSave}>Save Now Playing</button>
-              <button onClick={onLoad}>Load Now Playing</button>
+              <Button onClick={onSave}>Save Now Playing</Button>
+              <Button onClick={onLoad}>Load Now Playing</Button>
             </div>
             <div>
-              <button onClick={onSavePlugins}>Save Plugins</button>
-              <button onClick={onLoadPlugins}>Install Plugins</button>
+              <Button onClick={onSavePlugins}>Save Plugins</Button>
+              <Button onClick={onLoadPlugins}>Install Plugins</Button>
             </div>
             <div>
-              <button onClick={onLogout}>Logout</button>
+              <Button onClick={onLogout}>Logout</Button>
             </div>
           </div>
         </div>
       ) : (
-        <button onClick={onLogin}>Login</button>
+        <Button onClick={onLogin}>Login</Button>
       )}
       <pre>{message}</pre>
     </>
