@@ -18,3 +18,68 @@ declare global {
     Dropbox: typeof DropBoxType;
   };
 }
+
+type UiCheckLoginType = {
+  type: "check-login";
+};
+type UiLoginType = {
+  type: "login";
+  accessToken: string;
+  refreshToken: string;
+};
+type UiLogoutType = {
+  type: "logout";
+};
+type UiSetKeysType = {
+  type: "set-keys";
+  clientId: string;
+};
+type UiSaveType = {
+  type: "save";
+};
+type UiLoadType = {
+  type: "load";
+};
+type UiSavePluginsType = {
+  type: "save-plugins";
+};
+type UiLoadPluginsType = {
+  type: "load-plugins";
+};
+type UiSavePlaylistsType = {
+  type: "save-playlists";
+};
+type UiLoadPlaylistsType = {
+  type: "load-playlists";
+};
+
+export type UiMessageType =
+  | UiCheckLoginType
+  | UiLoginType
+  | UiLogoutType
+  | UiSetKeysType
+  | UiSaveType
+  | UiLoadType
+  | UiSavePluginsType
+  | UiLoadPluginsType
+  | UiSavePlaylistsType
+  | UiLoadPlaylistsType;
+
+type LoginType = {
+  type: "login";
+  accessToken: string;
+};
+
+type InfoType = {
+  type: "info";
+  origin: string;
+  pluginId: string;
+  clientId: string;
+};
+
+type MessangerType = {
+  type: "message";
+  message: string;
+};
+
+export type MessageType = LoginType | InfoType | MessangerType;

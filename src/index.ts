@@ -1,12 +1,21 @@
 import type { DropboxAuth } from "dropbox";
 import { CLIENT_ID } from "./shared";
 import "audiogata-plugin-typings";
+import { MessageType, UiMessageType } from "./types";
 
 const PATH_PREFIX = "/audiogata";
 const NOW_PLAYING_PATH = "/nowplaying.json";
 const PLUGIN_PATH = "/plugins.json";
 const PLAYLIST_PATH = "/playlists.json";
 let dropboxAuth: DropboxAuth;
+
+const sendMessage = (message: MessageType) => {
+  application.postUiMessage(message);
+};
+
+const setDropAuth = (clientId: string | null) => {
+  dropboxAuth = new Dropbox.DropboxAuth({ clientId: clientId || CLIENT_ID });
+};
 
 const setTokens = (accessToken: string, refreshToken: string) => {
   dropboxAuth.setAccessToken(accessToken);
@@ -42,7 +51,7 @@ const load = async (path: string): Promise<any[]> => {
 const saveNowPlaying = async () => {
   const tracks = await application.getNowPlayingTracks();
   await save(NOW_PLAYING_PATH, tracks);
-  application.postUiMessage({
+  sendMessage({
     type: "message",
     message: "Successfully saved Now playing tracks.",
   });
@@ -51,7 +60,7 @@ const saveNowPlaying = async () => {
 const loadNowPlaying = async () => {
   const tracks: Track[] = await load(NOW_PLAYING_PATH);
   await application.setNowPlayingTracks(tracks);
-  application.postUiMessage({
+  sendMessage({
     type: "message",
     message: "Successfully loaded Now playing tracks.",
   });
@@ -60,7 +69,7 @@ const loadNowPlaying = async () => {
 const savePlugins = async () => {
   const plugins = await application.getPlugins();
   await save(PLUGIN_PATH, plugins);
-  application.postUiMessage({
+  sendMessage({
     type: "message",
     message: "Successfully saved plugins.",
   });
@@ -69,7 +78,7 @@ const savePlugins = async () => {
 const addPlaylists = async () => {
   const playlists: Playlist[] = await load(PLAYLIST_PATH);
   await application.addPlaylists(playlists);
-  application.postUiMessage({
+  sendMessage({
     type: "message",
     message: "Successfully added playlists.",
   });
@@ -78,7 +87,7 @@ const addPlaylists = async () => {
 const savePlaylists = async () => {
   const playlists = await application.getPlaylists();
   await save(PLAYLIST_PATH, playlists);
-  application.postUiMessage({
+  sendMessage({
     type: "message",
     message: "Successfully saved playlists.",
   });
@@ -96,14 +105,16 @@ const sendOrigin = async () => {
   const domain = hostArray.join(".");
   const origin = `${document.location.protocol}//${domain}`;
   const pluginId = await application.getPluginId();
-  application.postUiMessage({
-    type: "origin",
+  const clientId = localStorage.getItem("clientId") ?? "";
+  sendMessage({
+    type: "info",
     origin: origin,
     pluginId: pluginId,
+    clientId: clientId,
   });
 };
 
-application.onUiMessage = async (message: any) => {
+application.onUiMessage = async (message: UiMessageType) => {
   switch (message.type) {
     case "login":
       let accessToken = message.accessToken;
@@ -115,7 +126,7 @@ application.onUiMessage = async (message: any) => {
     case "check-login":
       const token = localStorage.getItem("access_token");
       if (token) {
-        await application.postUiMessage({ type: "login", accessToken: token });
+        sendMessage({ type: "login", accessToken: token });
       }
       await sendOrigin();
       break;
@@ -137,6 +148,10 @@ application.onUiMessage = async (message: any) => {
     case "load-playlists":
       await addPlaylists();
       break;
+    case "set-keys":
+      localStorage.setItem("clientId", message.clientId);
+      setDropAuth(message.clientId);
+      break;
     case "logout":
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
@@ -144,7 +159,6 @@ application.onUiMessage = async (message: any) => {
   }
 };
 application.onDeepLinkMessage = async (message: string) => {
-  console.log(message);
   application.postUiMessage({ type: "deeplink", url: message });
 };
 
@@ -166,7 +180,8 @@ const loadScript = () => {
 
 const init = async () => {
   await loadScript();
-  dropboxAuth = new Dropbox.DropboxAuth({ clientId: CLIENT_ID });
+  const clientId = localStorage.getItem("clientId");
+  setDropAuth(clientId);
 
   let accessToken = localStorage.getItem("access_token");
   let refreshToken = localStorage.getItem("refresh_token");

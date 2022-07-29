@@ -1,8 +1,23 @@
-import { Button } from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  CssBaseline,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { FunctionalComponent } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { CLIENT_ID } from "./shared";
-import { AccessCodeResponse } from "./types";
+import { AccessCodeResponse, MessageType, UiMessageType } from "./types";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+const sendUiMessage = (message: UiMessageType) => {
+  parent.postMessage(message, "*");
+};
 
 const redirectPath = "/login_popup.html";
 const App: FunctionalComponent = () => {
@@ -10,6 +25,9 @@ const App: FunctionalComponent = () => {
   const [message, setMessage] = useState("");
   const [redirectUri, setRedirectUri] = useState("");
   const [pluginId, setPluginId] = useState("");
+  const [clientId, setClientId] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [useOwnKeys, setUseOwnKeys] = useState(false);
 
   const showMessage = (m: string) => {
     setMessage(m);
@@ -19,14 +37,18 @@ const App: FunctionalComponent = () => {
   };
 
   useEffect(() => {
-    const onMessage = (event: MessageEvent) => {
+    const onMessage = (event: MessageEvent<MessageType>) => {
       switch (event.data.type) {
         case "message":
           showMessage(event.data.message);
           break;
-        case "origin":
+        case "info":
           setRedirectUri(event.data.origin + redirectPath);
           setPluginId(event.data.pluginId);
+          setClientId(event.data.clientId);
+          if (event.data.clientId) {
+            setUseOwnKeys(true);
+          }
           break;
         case "login":
           setAccessToken(event.data.accessToken);
@@ -34,7 +56,7 @@ const App: FunctionalComponent = () => {
       }
     };
     window.addEventListener("message", onMessage);
-    parent.postMessage({ type: "check-login" }, "*");
+    sendUiMessage({ type: "check-login" });
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
@@ -67,18 +89,14 @@ const App: FunctionalComponent = () => {
       const accessToken = accessCodeResult.access_token;
       const refreshToken = accessCodeResult.refresh_token;
       setAccessToken(accessToken);
-      parent.postMessage(
-        {
-          type: "login",
-          accessToken,
-          refreshToken,
-        },
-        "*"
-      );
+      sendUiMessage({
+        type: "login",
+        accessToken,
+        refreshToken,
+      });
     };
     window.onmessage = async (event: MessageEvent) => {
       if (event.source === newWindow && event.data.url) {
-        const returnUrl = new URL(event.data.url);
         await onMessage(event.data.url);
       } else {
         // mobile deeplink
@@ -90,28 +108,52 @@ const App: FunctionalComponent = () => {
   };
 
   const onSave = () => {
-    parent.postMessage({ type: "save" }, "*");
+    sendUiMessage({ type: "save" });
   };
 
   const onSavePlugins = () => {
-    parent.postMessage({ type: "save-plugins" }, "*");
+    sendUiMessage({ type: "save-plugins" });
   };
 
   const onLoad = () => {
-    parent.postMessage({ type: "load" }, "*");
+    sendUiMessage({ type: "load" });
   };
 
   const onLoadPlugins = () => {
-    parent.postMessage({ type: "load-plugins" }, "*");
+    sendUiMessage({ type: "load-plugins" });
   };
 
   const onLogout = () => {
-    parent.postMessage({ type: "logout" }, "*");
+    sendUiMessage({ type: "logout" });
     setAccessToken("");
   };
 
+  const onAccordionChange = (_: any, expanded: boolean) => {
+    setShowAdvanced(expanded);
+  };
+
+  const onSaveKeys = () => {
+    setUseOwnKeys(!!clientId);
+    sendUiMessage({
+      type: "set-keys",
+      clientId: clientId,
+    });
+  };
+
+  const onClearKeys = () => {
+    setClientId("");
+    setUseOwnKeys(false);
+    sendUiMessage({
+      type: "set-keys",
+      clientId: "",
+    });
+  };
+
   return (
-    <>
+    <Box
+      sx={{ display: "flex", "& .MuiTextField-root": { m: 1, width: "25ch" } }}
+    >
+      <CssBaseline />
       {accessToken ? (
         <div>
           <div>
@@ -129,10 +171,52 @@ const App: FunctionalComponent = () => {
           </div>
         </div>
       ) : (
-        <Button onClick={onLogin}>Login</Button>
+        <div>
+          <Button variant="contained" onClick={onLogin}>
+            Login
+          </Button>
+          {useOwnKeys && (
+            <Typography>
+              Using Client Id set in the Advanced Configuration
+            </Typography>
+          )}
+          <Accordion expanded={showAdvanced} onChange={onAccordionChange}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1d-content"
+              id="panel1d-header"
+            >
+              <Typography>Advanced Configuration</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography>Supplying your own keys:</Typography>
+              <Typography>
+                {redirectUri} needs be added to Redirect URIs
+              </Typography>
+              <div>
+                <TextField
+                  label="Client ID"
+                  value={clientId}
+                  onChange={(e) => {
+                    const value = e.currentTarget.value;
+                    setClientId(value);
+                  }}
+                />
+              </div>
+              <Stack spacing={2} direction="row">
+                <Button variant="contained" onClick={onSaveKeys}>
+                  Save
+                </Button>
+                <Button variant="contained" onClick={onClearKeys} color="error">
+                  Clear
+                </Button>
+              </Stack>
+            </AccordionDetails>
+          </Accordion>
+        </div>
       )}
       <pre>{message}</pre>
-    </>
+    </Box>
   );
 };
 
