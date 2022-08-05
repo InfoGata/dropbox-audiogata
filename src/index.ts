@@ -3,7 +3,6 @@ import { CLIENT_ID } from "./shared";
 import "audiogata-plugin-typings";
 import { MessageType, UiMessageType } from "./types";
 
-const PATH_PREFIX = "/audiogata";
 const NOW_PLAYING_PATH = "/nowplaying.json";
 const PLUGIN_PATH = "/plugins.json";
 const PLAYLIST_PATH = "/playlists.json";
@@ -20,17 +19,13 @@ const setDropAuth = (clientId: string | null) => {
 const setTokens = (accessToken: string, refreshToken: string) => {
   dropboxAuth.setAccessToken(accessToken);
   dropboxAuth.setRefreshToken(refreshToken);
-  application.onNowPlayingTracksAdded = saveNowPlaying;
-  application.onNowPlayingTracksChanged = saveNowPlaying;
-  application.onNowPlayingTracksRemoved = saveNowPlaying;
-  application.onNowPlayingTracksSet = saveNowPlaying;
 };
 
 const save = async (path: string, items: any[]) => {
   // Requires files.content.write scope
   const dropbox = new Dropbox.Dropbox({ auth: dropboxAuth });
   await dropbox.filesUpload({
-    path: PATH_PREFIX + path,
+    path: path,
     mute: true,
     mode: { ".tag": "overwrite" },
     contents: JSON.stringify(items),
@@ -40,7 +35,7 @@ const save = async (path: string, items: any[]) => {
 const load = async (path: string): Promise<any[]> => {
   const dropbox = new Dropbox.Dropbox({ auth: dropboxAuth });
   const files = await dropbox.filesDownload({
-    path: PATH_PREFIX + path,
+    path: path,
   });
   const blob: Blob = (files.result as any).fileBlob;
   const json = await blob.text();

@@ -43,6 +43,7 @@ const App: FunctionalComponent = () => {
           showMessage(event.data.message);
           break;
         case "info":
+          console.log(event);
           setRedirectUri(event.data.origin + redirectPath);
           setPluginId(event.data.pluginId);
           setClientId(event.data.clientId);
@@ -88,6 +89,7 @@ const App: FunctionalComponent = () => {
       const accessCodeResult = accessCodeResponse.result as AccessCodeResponse;
       const accessToken = accessCodeResult.access_token;
       const refreshToken = accessCodeResult.refresh_token;
+      console.log("accessToken", accessToken);
       setAccessToken(accessToken);
       sendUiMessage({
         type: "login",
