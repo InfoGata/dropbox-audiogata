@@ -13,7 +13,7 @@
   "author": "Elijah Green",
   "license": "MIT",
   "devDependencies": {
-    "audiogata-plugin-typings": "1.0.1",
+    "@infogata/audiogata-plugin-typings": "1.0.3",
     "parcel": "^2.5.0",
     "typescript": "^4.6.2"
   },

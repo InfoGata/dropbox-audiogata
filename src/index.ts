@@ -1,6 +1,5 @@
 import type { DropboxAuth } from "dropbox";
 import { CLIENT_ID } from "./shared";
-import "audiogata-plugin-typings";
 import { MessageType, UiMessageType } from "./types";
 
 const NOW_PLAYING_PATH = "/nowplaying.json";
