@@ -150,6 +150,9 @@ application.onUiMessage = async (message: UiMessageType) => {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       break;
+    default:
+      const _exhaustive: never = message;
+      break;
   }
 };
 application.onDeepLinkMessage = async (message: string) => {
