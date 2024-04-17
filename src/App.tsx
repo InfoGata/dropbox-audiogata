@@ -1,33 +1,28 @@
+import { createEffect, createSignal } from "solid-js";
 import {
   Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Box,
-  Button,
-  CssBaseline,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { FunctionalComponent } from "preact";
-import { useState, useEffect } from "preact/hooks";
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "./components/ui/accordion";
+import { Button } from "./components/ui/button";
+import { Input } from "./components/ui/input";
 import { CLIENT_ID } from "./shared";
 import { AccessCodeResponse, MessageType, UiMessageType } from "./types";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const sendUiMessage = (message: UiMessageType) => {
   parent.postMessage(message, "*");
 };
 
 const redirectPath = "/login_popup.html";
-const App: FunctionalComponent = () => {
-  const [accessToken, setAccessToken] = useState("");
-  const [message, setMessage] = useState("");
-  const [redirectUri, setRedirectUri] = useState("");
-  const [pluginId, setPluginId] = useState("");
-  const [clientId, setClientId] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [useOwnKeys, setUseOwnKeys] = useState(false);
+const App = () => {
+  const [accessToken, setAccessToken] = createSignal("");
+  const [message, setMessage] = createSignal("");
+  const [redirectUri, setRedirectUri] = createSignal("");
+  const [pluginId, setPluginId] = createSignal("");
+  const [clientId, setClientId] = createSignal("");
+  const [showAdvanced, setShowAdvanced] = createSignal(false);
+  const [useOwnKeys, setUseOwnKeys] = createSignal(false);
 
   const showMessage = (m: string) => {
     setMessage(m);
@@ -36,7 +31,7 @@ const App: FunctionalComponent = () => {
     }, 3000);
   };
 
-  useEffect(() => {
+  createEffect(() => {
     const onMessage = (event: MessageEvent<MessageType>) => {
       switch (event.data.type) {
         case "message":
@@ -62,14 +57,14 @@ const App: FunctionalComponent = () => {
     window.addEventListener("message", onMessage);
     sendUiMessage({ type: "check-login" });
     return () => window.removeEventListener("message", onMessage);
-  }, []);
+  });
 
   const onLogin = async () => {
     const dropboxAuth = new Dropbox.DropboxAuth({ clientId: CLIENT_ID });
     const state = { pluginId: pluginId };
     const stateStr = JSON.stringify(state);
     const authUrl = await dropboxAuth.getAuthenticationUrl(
-      redirectUri,
+      redirectUri(),
       stateStr,
       "code",
       "offline",
@@ -86,7 +81,7 @@ const App: FunctionalComponent = () => {
       }
       const code = returnUrl.searchParams.get("code") || "";
       const accessCodeResponse = await dropboxAuth.getAccessTokenFromCode(
-        redirectUri,
+        redirectUri(),
         code
       );
       const accessCodeResult = accessCodeResponse.result as AccessCodeResponse;
@@ -141,7 +136,7 @@ const App: FunctionalComponent = () => {
     setUseOwnKeys(!!clientId);
     sendUiMessage({
       type: "set-keys",
-      clientId: clientId,
+      clientId: clientId(),
     });
   };
 
@@ -155,73 +150,58 @@ const App: FunctionalComponent = () => {
   };
 
   return (
-    <Box
-      sx={{ display: "flex", "& .MuiTextField-root": { m: 1, width: "25ch" } }}
-    >
-      <CssBaseline />
-      {accessToken ? (
-        <div>
-          <div>
-            <div>
-              <Button onClick={onSave}>Save Now Playing</Button>
-              <Button onClick={onLoad}>Load Now Playing</Button>
-            </div>
-            <div>
-              <Button onClick={onSavePlugins}>Save Plugins</Button>
-              <Button onClick={onLoadPlugins}>Install Plugins</Button>
-            </div>
-            <div>
-              <Button onClick={onLogout}>Logout</Button>
-            </div>
+    <div class="flex">
+      {accessToken() ? (
+        <div class="flex flex-col gap-2">
+          <div class="flex gap-2">
+            <Button onClick={onSave}>Save Now Playing</Button>
+            <Button onClick={onLoad}>Load Now Playing</Button>
+          </div>
+          <div class="flex gap-2">
+            <Button onClick={onSavePlugins}>Save Plugins</Button>
+            <Button onClick={onLoadPlugins}>Install Plugins</Button>
+          </div>
+          <div class="flex gap-2">
+            <Button onClick={onLogout}>Logout</Button>
           </div>
         </div>
       ) : (
         <div>
-          <Button variant="contained" onClick={onLogin}>
-            Login
-          </Button>
-          {useOwnKeys && (
-            <Typography>
-              Using Client Id set in the Advanced Configuration
-            </Typography>
+          <Button onClick={onLogin}>Login</Button>
+          {useOwnKeys() && (
+            <p>Using Client Id set in the Advanced Configuration</p>
           )}
-          <Accordion expanded={showAdvanced} onChange={onAccordionChange}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1d-content"
-              id="panel1d-header"
-            >
-              <Typography>Advanced Configuration</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>Supplying your own keys:</Typography>
-              <Typography>
-                {redirectUri} needs be added to Redirect URIs
-              </Typography>
-              <div>
-                <TextField
-                  label="Client ID"
-                  value={clientId}
-                  onChange={(e) => {
-                    const value = e.currentTarget.value;
-                    setClientId(value);
-                  }}
-                />
-              </div>
-              <Stack spacing={2} direction="row">
-                <Button variant="contained" onClick={onSaveKeys}>
-                  Save
-                </Button>
-                <Button variant="contained" onClick={onClearKeys} color="error">
-                  Clear
-                </Button>
-              </Stack>
-            </AccordionDetails>
+          <Accordion multiple collapsible class="w-full">
+            <AccordionItem value="item-1">
+              <AccordionTrigger>Advanced Configuration</AccordionTrigger>
+              <AccordionContent>
+                <div class="flex flex-col gap-4 m-4">
+                  <p>Supplying your own keys:</p>
+                  <p>{redirectUri()} needs be added to Redirect URIs</p>
+                  <div>
+                    <Input
+                      placeholder="Client ID"
+                      value={clientId()}
+                      onChange={(e) => {
+                        const value = e.currentTarget.value;
+                        setClientId(value);
+                      }}
+                    />
+                  </div>
+                  <div class="flex gap-2">
+                    <Button onClick={onSaveKeys}>Save</Button>
+                    <Button onClick={onClearKeys} color="error">
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
           </Accordion>
         </div>
       )}
-      <pre>{message}</pre>
-    </Box>
+      <pre>{message()}</pre>
+    </div>
   );
 };
 
