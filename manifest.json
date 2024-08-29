@@ -4,7 +4,7 @@
   "version": "1.2.0",
   "script": "dist/index.js",
   "options": "dist/options.html",
-  "description": "Store and retreive playlists from Dropbox",
+  "description": "Store and retrieve playlists from Dropbox",
   "updateUrl": "https://cdn.jsdelivr.net/gh/InfoGata/dropbox-audiogata@latest/manifest.json",
   "homepage": "https://github.com/InfoGata/dropbox-audiogata"
 }
