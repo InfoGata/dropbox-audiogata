@@ -27,7 +27,6 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "dropbox": "^10.26.0",
-    "preact": "^10.11.2",
     "solid-js": "^1.8.16",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7"

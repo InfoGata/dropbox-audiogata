@@ -128,10 +128,6 @@ const App = () => {
     setAccessToken("");
   };
 
-  const onAccordionChange = (_: any, expanded: boolean) => {
-    setShowAdvanced(expanded);
-  };
-
   const onSaveKeys = () => {
     setUseOwnKeys(!!clientId);
     sendUiMessage({
@@ -151,56 +147,58 @@ const App = () => {
 
   return (
     <div class="flex">
-      {accessToken() ? (
-        <div class="flex flex-col gap-2">
-          <div class="flex gap-2">
-            <Button onClick={onSave}>Save Now Playing</Button>
-            <Button onClick={onLoad}>Load Now Playing</Button>
+      <div class="flex flex-col gap-2 w-full">
+        {accessToken() ? (
+          <div>
+            <div class="flex gap-2">
+              <Button onClick={onSave}>Save Now Playing</Button>
+              <Button onClick={onLoad}>Load Now Playing</Button>
+            </div>
+            <div class="flex gap-2">
+              <Button onClick={onSavePlugins}>Save Plugins</Button>
+              <Button onClick={onLoadPlugins}>Install Plugins</Button>
+            </div>
+            <div class="flex gap-2">
+              <Button onClick={onLogout}>Logout</Button>
+            </div>
           </div>
-          <div class="flex gap-2">
-            <Button onClick={onSavePlugins}>Save Plugins</Button>
-            <Button onClick={onLoadPlugins}>Install Plugins</Button>
-          </div>
-          <div class="flex gap-2">
-            <Button onClick={onLogout}>Logout</Button>
-          </div>
-        </div>
-      ) : (
-        <div>
-          <Button onClick={onLogin}>Login</Button>
-          {useOwnKeys() && (
-            <p>Using Client Id set in the Advanced Configuration</p>
-          )}
-          <Accordion multiple collapsible class="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger>Advanced Configuration</AccordionTrigger>
-              <AccordionContent>
-                <div class="flex flex-col gap-4 m-4">
-                  <p>Supplying your own keys:</p>
-                  <p>{redirectUri()} needs be added to Redirect URIs</p>
-                  <div>
-                    <Input
-                      placeholder="Client ID"
-                      value={clientId()}
-                      onChange={(e) => {
-                        const value = e.currentTarget.value;
-                        setClientId(value);
-                      }}
-                    />
+        ) : (
+          <div>
+            <Button onClick={onLogin}>Login</Button>
+            {useOwnKeys() && (
+              <p>Using Client Id set in the Advanced Configuration</p>
+            )}
+            <Accordion multiple collapsible>
+              <AccordionItem value="item-1">
+                <AccordionTrigger>Advanced Configuration</AccordionTrigger>
+                <AccordionContent>
+                  <div class="flex flex-col gap-4 m-4">
+                    <p>Supplying your own keys:</p>
+                    <p>{redirectUri()} needs be added to Redirect URIs</p>
+                    <div>
+                      <Input
+                        placeholder="Client ID"
+                        value={clientId()}
+                        onChange={(e) => {
+                          const value = e.currentTarget.value;
+                          setClientId(value);
+                        }}
+                      />
+                    </div>
+                    <div class="flex gap-2">
+                      <Button onClick={onSaveKeys}>Save</Button>
+                      <Button onClick={onClearKeys} color="error">
+                        Clear
+                      </Button>
+                    </div>
                   </div>
-                  <div class="flex gap-2">
-                    <Button onClick={onSaveKeys}>Save</Button>
-                    <Button onClick={onClearKeys} color="error">
-                      Clear
-                    </Button>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      )}
-      <pre>{message()}</pre>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )}
+        <pre>{message()}</pre>
+      </div>
     </div>
   );
 };
