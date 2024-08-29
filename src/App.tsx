@@ -149,7 +149,7 @@ const App = () => {
     <div class="flex">
       <div class="flex flex-col gap-2 w-full">
         {accessToken() ? (
-          <div>
+          <div class="flex flex-col gap-2">
             <div class="flex gap-2">
               <Button onClick={onSave}>Save Now Playing</Button>
               <Button onClick={onLoad}>Load Now Playing</Button>
