@@ -1,7 +1,7 @@
 {
   "id": "CKLZjstjyBrAexuRI_hn7",
   "name": "Plugin for Dropbox",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "script": "dist/index.js",
   "options": "dist/options.html",
   "description": "Store and retrieve playlists from Dropbox",
