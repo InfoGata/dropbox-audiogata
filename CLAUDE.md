@@ -4,86 +4,43 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Dropbox plugin for AudioGata that enables users to store and sync their AudioGata data (playlists, now playing tracks, and plugins) to Dropbox. The plugin is built using SolidJS with TypeScript and Vite.
+An AudioGata cloud sync plugin for Dropbox, built with Preact, TypeScript and
+Vite. It is a storage backend only: AudioGata decides when to sync, merges
+documents with automerge and hands this plugin opaque bytes. The plugin never
+reads playlists itself.
+
+It implements, from `@infogata/audiogata-plugin-typings`:
+- `onSyncUpload({ docUrl, data })` / `onSyncDownload({ docUrl })` -- `data` is a
+  base64 automerge document; download returns `{ data: null }` when there is no
+  file yet (Dropbox answers 409 `path/not_found`).
+- `onLogin` / `onLoginCallback` / `onLogout` / `onIsLoggedIn` -- the app opens a
+  blank popup, `onLogin` returns the OAuth url, and the app relays the callback
+  url to `onLoginCallback`. The auth url carries `state={"pluginId": ...}` so
+  the Android app can route the callback deep link back here.
+
+Shares its design with `dropbox-socialgata`; keep the two in step.
 
 ## Build Commands
 
 ```bash
-# Build both plugin and options UI
-npm run build
-
-# Build options UI only (creates dist/options.html)
-npm run build:options
-
-# Build plugin JS only (creates dist/index.js)
-npm run build:plugin
+npm run build          # tsc, then both vite builds
+npm run build:options  # options page (Preact) -> dist/options.html
+npm run build:plugin   # plugin script -> dist/index.js
 ```
 
-## Architecture
+`dist/` is committed: jsdelivr serves the plugin from the repo.
 
-### Dual Build System
-The project uses two separate Vite configurations:
-- `vite.config.ts` - Builds the options UI (SolidJS app) into `dist/options.html`
-- `plugin.vite.config.ts` - Builds the main plugin logic into `dist/index.js`
+## Dropbox details
 
-### Core Components
-
-**Main Plugin (`src/index.ts`)**:
-- Handles communication with AudioGata application via `application` global
-- Manages Dropbox authentication and API calls
-- Implements save/load functionality for playlists, plugins, and now playing tracks
-- Uses message-based architecture with UI components
-
-**Options UI (`src/App.tsx`)**:
-- SolidJS component providing the plugin configuration interface
-- Handles OAuth authentication flow with Dropbox
-- Allows users to configure custom Dropbox app credentials
-- Communicates with main plugin via `postMessage`
-
-**Message Types (`src/types.ts`)**:
-- Defines TypeScript interfaces for communication between UI and plugin
-- Two-way message system: `UiMessageType` (UI → Plugin) and `MessageType` (Plugin → UI)
-
-### Key Files Structure
-```
-src/
-├── index.ts          # Main plugin logic (runs in AudioGata context)
-├── App.tsx           # Options UI SolidJS component
-├── options.tsx       # Options UI entry point
-├── options.html      # Options page template
-├── types.ts          # TypeScript message/data interfaces
-├── shared.ts         # Shared constants (CLIENT_ID)
-└── components/ui/    # SolidJS UI components (Button, Input, Accordion)
-```
-
-## Technology Stack
-
-- **Framework**: SolidJS (not React, despite some alias configuration)
-- **Build Tool**: Vite with custom configurations
-- **Styling**: TailwindCSS with custom design system
-- **UI Components**: @kobalte/core (SolidJS component library)
-- **External API**: Dropbox SDK (loaded dynamically via CDN)
-- **Plugin System**: AudioGata plugin typings from `@infogata/audiogata-plugin-typings`
-
-## Authentication Flow
-
-1. Plugin loads Dropbox SDK from CDN
-2. User clicks login in options UI
-3. Opens Dropbox OAuth in popup window
-4. Handles redirect to extract access/refresh tokens  
-5. Stores tokens in localStorage
-6. Plugin maintains authentication state across sessions
-
-## Data Storage Paths
-
-The plugin stores data in these Dropbox paths:
-- `/nowplaying.json` - Current playing queue
-- `/plugins.json` - Installed plugins list
-- `/playlists.json` - User playlists
-
-## Development Notes
-
-- Uses `viteSingleFile` plugin to bundle everything into single files
-- Custom path aliases: `~` points to `./src`
-- Theme system integrated with AudioGata's theme via `localStorage.setItem("kb-color-mode", theme)`
-- Plugin manifest in `manifest.json` defines entry points and metadata
+- OAuth code flow with PKCE and `token_access_type=offline`, so no client
+  secret is involved. The verifier is kept in localStorage because the plugin
+  may reload before the callback arrives.
+- Dropbox access tokens last about four hours. They are refreshed a minute
+  before expiry and once more on a 401; concurrent refreshes share one request.
+  A 400/401 from the refresh means the grant is gone and the user must log in
+  again.
+- Files are `/<docUrl>.automerge` in the app folder (AudioGata uses
+  `audiogata-library`), written with `mode: overwrite`.
+- The default app key is in `src/shared.ts`; a user's own key replaces it.
+- API calls go through `application.networkRequest`; the token endpoint is
+  called with `fetch` (Dropbox allows CORS there).
